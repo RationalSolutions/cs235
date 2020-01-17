@@ -61,7 +61,7 @@ void stack <T> ::push (const T &t)
 * accesses the top element on the stack
 ********************************************/
 template <class T>
-T & stack ::top ()
+T & stack <T> ::top ()
    {
       if(empty ())
          throw " ERROR: Unable to reference the element from an empty stack";
@@ -74,7 +74,7 @@ T & stack ::top ()
 * accesses the top element on the stack
 ********************************************/
 template <class T>
-T stack :: top () const
+T stack <T> :: top () const
 {
    if(empty ())
       throw " ERROR: Unable to reference the element from an empty stack";
@@ -82,7 +82,7 @@ T stack :: top () const
       return data[size () - 1];
 }
 /***************************************************
-* Vector :: resize
+* STACK :: resize
 * Increases the capacity of the data array
 **************************************************/
 template <class T>
@@ -146,6 +146,58 @@ void stack <T> :: resize(int newCapacity)
       }
 
       return *this;
+   }
+
+/*******************************************
+* STACK :: COPY CONSTRUCTOR
+*******************************************/
+   template <class T>
+   stack <T>::stack(const custom::stack<T> &rhs)
+   {
+      if(rhs.capacity() == 0)
+      {
+         this->numElements = 0;
+         this->numCapacity = 0;
+         this->data = NULL;
+         return;
+      }
+
+      try
+      {
+         this->data = new T[rhs.capacity()];
+      }
+      catch (std::bad_alloc)
+      {
+         throw "ERROR: Unable to allocate a new buffer for stack";
+      }
+
+      this->numElements = rhs.size();
+      this->numCapacity = rhs.capacity();
+
+      for (int i = 0; i < this->size(); ++i)
+      {
+         this->data[i] = rhs.data[i];
+      }
+   }
+
+/**********************************************
+* STACK : NON-DEFAULT CONSTRUCTOR
+* Preallocate the stack to "capacity"
+**********************************************/
+   template <class T>
+   stack <T>::stack(int numElements)
+   {
+      try
+      {
+         this->data = new T[numElements];
+      }
+      catch (std::bad_alloc)
+      {
+         throw "ERROR: Unable to allocate a new buffer for stack";
+      }
+
+      this->numElements = numElements;
+      this->numCapacity = numElements;
    }
 
 }; //namespace custom
