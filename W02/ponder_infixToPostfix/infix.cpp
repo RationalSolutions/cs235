@@ -11,6 +11,7 @@
 
 #include <iostream>    // for ISTREAM and COUT
 #include <string>      // for STRING
+#include <cctype>
 #include <cassert>     // for ASSERT
 #include "stack.h"     // for STACK
 using namespace std;
@@ -22,6 +23,41 @@ using namespace std;
 string convertInfixToPostfix(const string & infix)
 {
    string postfix;
+   stack <T> temp;
+
+
+   for (int i = 0; i < infix.size(); ++i)
+   {
+      switch (infix[i])
+      {
+         case isalnum():
+            postfix.[i++] = infix[i];
+            break;
+         case "(":
+            temp.push(infix[i]);
+            break;
+         case ")":
+            do
+            {
+               postfix[i++] = temp.top();
+               temp.pop();
+            }while (temp.top() != "(")
+               temp.pop();
+            break;
+         default:
+            do
+            {
+               postfix[i++] = temp.top();
+               temp.pop();
+            } while(!temp.empty() && infix[i] <= temp.top())
+      }
+
+      while(!temp.empty())
+      {
+         postfix[i] = temp.top();
+         temp.pop();
+      }
+   }
 
    return postfix;
 }
