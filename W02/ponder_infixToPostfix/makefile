@@ -1,11 +1,15 @@
 ###############################################################
 # Program:
 #     Assignment 02, STACK
-#     Brother XXXX, CS235
+#     Brother Kirby, CS235
 # Author:
-#     <your name here>
+#     Coby Jenkins
+#     Michael Gibson
 # Summary:
-#     <put a description here>
+#     Create a personal version of the stack class. This class
+#     maintains the same functionality of the standard template
+#     library. This is a template class able to accept any number
+#     of values in any data-type. Also included is Infix to Postfix.
 # Time:
 #     <how long did it take to complete this program>?
 ###############################################################

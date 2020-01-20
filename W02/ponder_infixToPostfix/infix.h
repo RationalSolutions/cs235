@@ -11,6 +11,10 @@
 #ifndef INFIX_H
 #define INFIX_H
 
+#include <string>
+#include <vector>
+
+
 /*****************************************************
  * TEST INFIX TO POSTFIX
  * Prompt the user for infix text and display the
