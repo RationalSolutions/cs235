@@ -16,13 +16,20 @@
 #ifndef CS235_QUEUE_H
 #define CS235_QUEUE_H
 
+#include <cstddef> // allows NULL
+#include <new> // allows bad_alloc
 #include <cassert>
 
 namespace custom
 {
 /************************************************
 * QUEUE
-* A class that holds stuff, first in first out
+* A data structure designed to operate first in
+* first out (FIFO). Elements are inserted in the
+* rear and get removed from the front. Elements on
+* both ends of the structure can be manipulated. Elements
+* between the front and back cannot be touched. The only
+* element that can be removed is the front.
 ***********************************************/
 template <class T>
 class queue
@@ -39,7 +46,7 @@ private:
 
 public:
    // constructors and destructors
-   queue(): numCapacity(0), numPop(0), numPush(0) {data = NULL;}
+   queue(): numCapacity(0), numPop(0), numPush(0), data(NULL){};
    queue(int numCapacity);
    queue(const queue <T> & rhs);
    ~queue()
@@ -47,6 +54,8 @@ public:
       data = NULL;
       delete []data;
    }
+
+   // assignment operator
    queue & operator = (const queue & rhs);
 
    // standard container interfaces
@@ -65,25 +74,29 @@ public:
 
 /********************************************
 * QUEUE :: PUSH
-* inserts an element in the collection and doubles the object`s 
-* capacity when necessary.
+* pushes an element into the last position in
+* the queue. Determines if the capacity allows
+* for the additional data. 
 ********************************************/
 template <class T>
 void queue <T> :: push (const T &t)
    {
+      // does the capacity allow for additional data?
       if(this->numCapacity == 0)
          resize(1);
 
       if(this->size() == this->numCapacity)
          resize(this->numCapacity*2);
 
+      // adds the data to the array
       numPush++;
       data[iTail()] = t;
    }
 
 /********************************************
 * QUEUE :: FRONT
-* accesses the top element on the queue
+* accesses the first element in the queue
+* read/write capable
 ********************************************/
 template <class T>
 T & queue <T> :: front ()
@@ -96,7 +109,8 @@ T & queue <T> :: front ()
 
 /********************************************
 * QUEUE :: FRONT CONSTANT
-* accesses the top element on the queue
+* accesses the first element in the queue
+* read only.
 ********************************************/
 template <class T>
 T & queue <T> :: front () const
@@ -109,7 +123,8 @@ T & queue <T> :: front () const
 
 /********************************************
 * QUEUE :: BACK
-* accesses the top element on the queue
+* accesses the last element in the queue
+* read/write capable
 ********************************************/
 template <class T>
 T & queue <T> :: back ()
@@ -122,7 +137,8 @@ T & queue <T> :: back ()
 
 /********************************************
 * QUEUE :: BACK CONSTANT
-* accesses the top element on the queue
+* accesses the last element in the queue
+* read only.
 ********************************************/
 template <class T>
 T & queue <T> :: back () const
@@ -140,29 +156,44 @@ T & queue <T> :: back () const
 template <class T>
 void queue <T> :: resize(int newCapacity)
 {
-   T * newData;
+    // initialize temporary variables
+    T * newData;
+    int rhsNumPush = numPush;
+    int rhsNumPop = numPop;
 
-   try
-   {
-      newData = new T[newCapacity];
-   }
-   catch (std::bad_alloc)
-   {
-      throw "ERROR: Unable to allocate a new buffer for queue";
-   }
+    // reset numPop and numPush for new array
+    numPop = numPush = 0;
 
-   for (int i = numPop; i < numPush; ++i)
-   {
-      newData[i % numCapacity] = data[i % numCapacity];
-   }
+    // allocate memory for new array
+    try
+    {
+       newData = new T[newCapacity];
+    }
+    catch (std::bad_alloc)
+    {
+       throw "ERROR: Unable to allocate a new buffer for queue";
+    }
 
-   delete []data;
-   data = newData;
-   numCapacity = newCapacity;
+    // iterate through old queue to copy data to
+    // temporary array
+    for (int i = rhsNumPop; i < rhsNumPush; ++i)
+    {
+       newData[numPush] = data[i % numCapacity];
+       numPush++;
+    }
+
+    // delete information from old and move new data
+    // to data and set numCapacity to match new buffer.
+    delete []data;
+    data = newData;
+    numCapacity = newCapacity;
 }
 
 /*******************************************
 * QUEUE :: Assignment
+* copies one queue to another queue. determines
+* and sets buffer requirements. moves data into
+* the new queue starting in position [0].
 *******************************************/
    template <class T>
    queue <T> & queue <T> ::operator=(const custom::queue<T> &rhs)
@@ -201,6 +232,9 @@ void queue <T> :: resize(int newCapacity)
 
 /*******************************************
 * QUEUE :: COPY CONSTRUCTOR
+* Creates a new queue as a copy of an old queue.
+* determines buffer size requirements, moves data
+* into new queue starting in position [0]
 *******************************************/
    template <class T>
    queue <T>::queue(const custom::queue<T> &rhs)
