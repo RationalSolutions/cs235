@@ -12,6 +12,7 @@
 #define NOW_SERVING_H
 
 #include "deque.h"     // for DEQUE
+#include "student.h"   // for STUDENT class
 
 // the interactive nowServing program
 void nowServing();

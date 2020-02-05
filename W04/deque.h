@@ -4,7 +4,10 @@
  * Summary:
  *    This class contains the notion of an deque. This acts like the
  *    standard library deque class and is generic, meaning it accepts
- *    any data-type. (First In, First Out)
+ *    any data-type. New data can be pushed or popped
+ *    from either side as well. However, the elements between the
+ *    first and last element cannot be touched. The order of these
+ *    elements are maintained.
  *
  *    This will contain the class definition of:
  *       deque             : similar to std::deque
@@ -41,13 +44,14 @@ private:
    int numCapacity;
 
    void resize(int newCapacity);
-   int capacity() { return numCapacity; }
+   int capacity() const { return numCapacity; }
    int iFrontNormalize() const { return iNormalize(iFront); }
    int iBackNormalize() const { return iNormalize(iBack); }
+   int iNormalize(const int i) const;
 
 public:
    // constructors and destructors
-   deque(): numCapacity(0), iFront(0), iBack(-1), data(NULL){};
+   deque(): numCapacity(0), iFront(0), iBack(-1), data(0){};
    deque(int numCapacity);
    deque(const deque <T> & rhs);
    ~deque()
@@ -60,19 +64,18 @@ public:
    deque & operator = (const deque & rhs);
 
    // standard container interfaces
-   bool empty() const { return size() == 0; }
-   int size() const { return iBack - iFront + 1; }
+   bool empty() const { return (size() == 0); }
+   int size() const { return (iBack - iFront) + 1; }
    void clear() {iFront = 0; iBack = -1; }
-   int capacity() const { return numCapacity; }
-   void push_front(const T &t);
-   void push_back(const T &t);
+   void push_front(T t);
+   void push_back(T t);
    void pop_front();
    void pop_back();
    T & front();
-   T & front() const;
+   T front() const;
    T & back();
-   T & back() const;
-   int iNormalize(int i) const;
+   T back() const;
+
 };
 
 /********************************************
@@ -80,34 +83,30 @@ public:
 * removes an element from the back of the array
 ********************************************/
 template <class T>
-void deque <T> :: pop_front()
-{
-   if(empty()){
-         throw "ERROR: attempting to remove an element in an empty deque";
-    }
-    else
-    {
-        iFront++;
-    }
-    
-}
+void deque <T> ::pop_front()
+   {
+      if(empty())
+      {
+         return;
+      }
+
+      iFront++;
+   }
 
 /********************************************
 * DEQUE :: POP_BACK
 * removes an element from the back of the array
 ********************************************/
 template <class T>
-void deque <T> :: pop_back()
-{
-   if(empty()){
-         throw "ERROR: attempting to remove an element in an empty deque";
-    }
-    else
-    {
-        iBack--;
-    }
-    
-}
+void deque <T> ::pop_back()
+   {
+      if(empty())
+      {
+         return;
+      }
+
+      iBack--;
+   }
 
 /********************************************
 * DEQUE :: INORMALIZE
@@ -117,13 +116,20 @@ void deque <T> :: pop_back()
 * than the capacity of the array.
 ********************************************/
 template <class T>
-int deque <T> :: iNormalize(int i) const
-{ 
-    int iTemp = i; 
-    while(iTemp<=0){
-        iTemp += capacity();
-    }
-    return iTemp % capacity();
+int deque <T> :: iNormalize(const int i) const
+{
+   // we determined to use this algorithm to bring
+   // the number to positive before applying mod
+   int iTemp = i; 
+   while(iTemp < 0){
+      iTemp += capacity();
+   }
+   return iTemp % capacity();
+   // this algorithm does the same thing only in
+   // a different way.
+   /*
+   return ((i % capacity()) + capacity()) % capacity();
+   */
 }
 
 /********************************************
@@ -133,14 +139,13 @@ int deque <T> :: iNormalize(int i) const
 * for the additional data. 
 ********************************************/
 template <class T>
-void deque <T> :: push_front (const T &t)
+void deque <T> :: push_front (T t)
    {
       // does the capacity allow for additional data?
-      if(capacity() == 0)
-         resize(1);
-
       if(size() == capacity())
-         resize(capacity()*2);
+      {
+         resize(capacity() * 2);
+      }
 
       // adds the data to the array
       iFront--;
@@ -154,14 +159,13 @@ void deque <T> :: push_front (const T &t)
 * for the additional data. 
 ********************************************/
 template <class T>
-void deque <T> :: push_back (const T &t)
+void deque<T>::push_back(T t)
    {
       // does the capacity allow for additional data?
-      if(capacity() == 0)
-         resize(1);
-
       if(size() == capacity())
-         resize(capacity()*2);
+      {
+         resize(capacity() * 2);
+      }
 
       // adds the data to the array
       iBack++;
@@ -169,35 +173,39 @@ void deque <T> :: push_back (const T &t)
    }
 
 /********************************************
-* DEQUE :: FRONT
+* DEQUE :: FRONT (pass by ref)
 * accesses the first element in the deque
 * read/write capable
 ********************************************/
 template <class T>
-T & deque <T> :: front ()
+T & deque<T>::front()
    {
       if(empty ())
-         throw "ERROR: attempting to access an element in an empty deque";
-      else
-         return data[iFrontNormalize()];
+      {
+         throw "ERROR: unable to access data from an empty deque";
+      }
+
+      return data[iFrontNormalize()];
    }
 
 /********************************************
-* DEQUE :: FRONT CONSTANT
+* DEQUE :: FRONT CONSTANT (pass by value)
 * accesses the first element in the deque
 * read only.
 ********************************************/
 template <class T>
-T & deque <T> :: front () const
-{
-   if(empty ())
-      throw "ERROR: attempting to access an element in an empty deque";
-   else
+T deque <T>::front() const
+   {
+      if(empty ())
+      {
+         throw "ERROR: unable to access data from an empty deque";
+      }
+
       return data[iFrontNormalize()];
-}
+   }
 
 /********************************************
-* DEQUE :: BACK
+* DEQUE :: BACK (pass by ref)
 * accesses the last element in the deque
 * read/write capable
 ********************************************/
@@ -205,21 +213,21 @@ template <class T>
 T & deque <T> :: back ()
    {
       if(empty ())
-         throw "ERROR: attempting to access an element in an empty deque";
+         throw "ERROR: unable to access data from an empty deque";
       else
          return data[iBackNormalize()];
    }
 
 /********************************************
-* DEQUE :: BACK CONSTANT
+* DEQUE :: BACK CONSTANT (pass by value)
 * accesses the last element in the deque
 * read only.
 ********************************************/
 template <class T>
-T & deque <T> :: back () const
+T deque <T> :: back () const
 {
    if(empty ())
-      throw "ERROR: attempting to access an element in an empty deque";
+      throw "ERROR: unable to access data from an empty deque";
    else
       return data[iBackNormalize()];
 }
@@ -261,13 +269,7 @@ void deque <T> :: resize(int newCapacity)
    
    // delete information from old and move new data
    delete []data;
-   data = new T[newCapacity];
-
-   for (size_t i = 0; i < newCapacity - 1; i++)
-   {
-      data[i] = newData[i];
-   }
-
+   data = newData;
 }
 
 /*******************************************
@@ -277,38 +279,33 @@ void deque <T> :: resize(int newCapacity)
 * the new deque starting in position [0].
 *******************************************/
    template <class T>
-   deque <T> & deque <T> ::operator=(const custom::deque<T> &rhs)
+   deque <T> & deque <T>::operator=(const deque &rhs)
    {
-      this->iFront = 0;
-      this->iBack = -1;
-
-      if(rhs.capacity() == 0)
-      {
-         this->numCapacity = 0;
-         this->data = NULL;
-         return *this;
-      }
-
       try
       {
-         this->data = new T[rhs.size()];
+         // delete existing data 
+         clear();
+
+         // check capacity
+         if(this->capacity() < rhs.size())
+         {
+            resize(rhs.size());
+         }
+
+         // copy rhs data into lhs
+         for (int i = rhs.iFront; i <= rhs.iBack; i++)
+         {
+            this->push_back(rhs.data[iNormalize(i)]);
+         }
+
+         return *this;
+
+      // if there is an error allocating a new buffer
       }
       catch (std::bad_alloc)
       {
          throw "ERROR: Unable to allocate a new buffer for deque";
       }
-
-      if(this->capacity() < rhs.size())
-      {
-         this->resize(rhs.size());
-      }
-
-      for (int i = rhs.iFront; i < rhs.iBack; ++i)
-      {
-         this->push_back(rhs.data[iNormalize(i)]);
-      }
-
-      return *this;
    }
 
 /*******************************************
@@ -320,30 +317,36 @@ void deque <T> :: resize(int newCapacity)
    template <class T>
    deque <T>::deque(const custom::deque<T> &rhs)
    {
+      // set first and last position variables
       this->iFront = 0;
       this->iBack = -1;
-
+      
+      // if we're copying an empty deque, we're done
       if(rhs.capacity() == 0)
       {
          this->numCapacity = 0;
          this->data = NULL;
       }
 
+      // allocate the buffer for the new array
       try
       {
-         this->data = new T[rhs.size()];
+         this->data = new T[rhs.capacity()];
       }
       catch (std::bad_alloc)
       {
          throw "ERROR: Unable to allocate a new buffer for deque";
       }
 
+      // copy array data to the new array
       if(this->capacity() < rhs.size())
       {
          this->resize(rhs.size());
       }
 
-      for (int i = rhs.iFront; i < rhs.iBack; ++i)
+      this->numCapacity = rhs.numCapacity;
+
+      for (int i = rhs.iFront; i <= rhs.iBack; i++)
       {
          this->push_back(rhs.data[iNormalize(i)]);
       }
@@ -356,15 +359,17 @@ void deque <T> :: resize(int newCapacity)
    template <class T>
    deque <T>::deque(int numCapacity)
    {
+      // allocate buffer for new array
       try
       {
          this->data = new T[numCapacity];
       }
       catch (std::bad_alloc)
       {
-         throw "ERROR: Unable to allocate a new buffer for deque";
+         throw "ERROR: Unable to allocate a new buffer for deque ";
       }
-
+      
+      // establish deque variables ready for data
       this->numCapacity = numCapacity;
       this->iFront = 0;
       this->iBack = -1;
@@ -373,46 +378,3 @@ void deque <T> :: resize(int newCapacity)
 
 }; //namespace custom
 #endif //CS235_DEQUE_H
-
-
-/*
-if (newCapacity == 0)
-   {
-      numCapacity = ++newCapacity;
-      data = new T[newCapacity];
-      return;
-   }
-
-   // initialize temporary variables
-   T * newData;
-   int oldIFront = iFront;
-   int oldIBack = iBack;
-
-   // reset iFront and iBack for new array
-   iFront = 0;
-   iBack =  0;
-
-   // allocate memory for new array
-   try
-   {
-      newData = new T[newCapacity];
-   }
-   catch (std::bad_alloc)
-   {
-      throw "ERROR: Unable to allocate a new buffer for deque";
-   }
-
-   // iterate through old deque to copy data to
-   // temporary array
-   for (int i = oldIFront; i < oldIBack; ++i)
-   {
-      newData[iBack++] = data[iNormalize(i)];
-   }
-
-   // delete information from old and move new data
-   // to data and set numCapacity to match new buffer.
-   delete []data;
-   data = newData;
-   numCapacity = newCapacity;
-   iBack -= 1;
- */
