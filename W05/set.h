@@ -73,8 +73,8 @@ public:
    iterator begin()      { return iterator (data); }
    iterator end();
    reverse_iterator rbegin();
-   iterator find(const T & t);
-   iterator erase(const T & t);
+   iterator find(T t);
+   iterator erase(iterator it);
 
    class const_iterator;
    const_iterator cbegin() const { return const_iterator (data); }
@@ -203,4 +203,72 @@ private:
    T * p;
 };
 
-};
+/********************************************
+* SET ITERATOR :: END
+* Note that you have to use "typename" before the return value type
+********************************************/
+template <class T>
+typename set <T>::iterator set<T>::end()
+{
+   return iterator(data + numElements);
+}
+
+/********************************************
+* SET ITERATOR :: FIND
+* Note that you have to use "typename" before the return value type
+********************************************/
+template <class T>
+typename set<T>::iterator set<T>::find(T t)
+{
+   for (iterator it = begin(); it != end(); it++)
+   {
+      if(*(it) == t)
+         return it;
+   }
+
+   return end();
+}
+
+/********************************************
+* SET ITERATOR :: ERASE
+* Note that you have to use "typename" before the return value type
+********************************************/
+template <class T>
+typename set<T>::iterator set<T>::erase(set<T>::iterator it)
+{
+   int index = findIndex(*(it++));
+
+   int a = 0;
+   T* tempData = new T[numCapacity];
+
+   for (int i = 0; i < (numElements - 1) ; ++i)
+   {
+      if(n == index)
+         ++a;
+
+      tempData[i] = data[a++];
+   }
+
+   try
+   {
+      this->data = new T[rhs.capacity()];
+   }
+   catch (std::bad_alloc)
+   {
+      throw "ERROR: Unable to allocate a new buffer for set";
+   }
+
+   for (int j = 0; j < numElements; j++)
+   {
+      data[j] = tempData[j];
+   }
+
+   delete[] tempData;
+   numElements--;
+
+   return it;
+
+
+}
+
+} //namespace custom
