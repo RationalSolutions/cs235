@@ -21,10 +21,8 @@
 
 #include <cstddef> // allows NULL
 #include <new> // allows bad_alloc
-#include <cassert>
 
-namespace custom;
-
+namespace custom
 {
 /*********************************************************
  * SET
@@ -33,242 +31,340 @@ namespace custom;
  * be accessed either sequentially or by search. It expands to
  * meet the needs of the client.
  * *********************************************************/
-template <class T>
-class set
-{
-private:
-   T * data;
-   int numElements;
-   int numCapacity;
-
-   void resize(int newCapacity);
-   int capacity() const { return numCapacity; }
-   int findIndex(const T & t);
-
-public:
-   // constructors and destructors
-   set(): numCapacity(0), numElements(0), data(NULL){};
-   set(int numCapacity);
-   set(const set <T> & rhs);
-   ~set()
+   template<class T>
+   class set
    {
-      data = NULL;
-      delete []data;
-   }
+   private:
+      T *data;
+      int numElements;
+      int numCapacity;
 
-   // overload operators
-   set & operator = (const set & rhs);  // assignment
-   set & operator || (const set & rhs); // union
-   set & operator && (const set & rhs); // intersection
-   set & operator - (const set & rhs);  // difference
+      void resize(int newCapacity);
+      int capacity() const { return numCapacity; }
+      const int findIndex(const T t);
+      void reallocateData(int numCapacity);
 
-   // standard container interfaces
-   int size() const { return numElements; }
-   bool empty() const { return (size() == 0); }
-   void clear() { numElements = 0; data = NULL; }
-   void insert(const T & t);
+   public:
+      // constructors and destructors
+      set() : numCapacity(0), numElements(0), data(NULL){};
+      set(int numCapacity);
+      set(const set<T> &rhs);
+      ~set()
+      {
+         data = NULL;
+         delete[]data;
+      }
 
-   // iterator interfaces
-   class iterator;
-   iterator begin()      { return iterator (data); }
-   iterator end();
-   reverse_iterator rbegin();
-   iterator find(T t);
-   iterator erase(iterator it);
+      // overload operators
+      set &operator=(const set &rhs);  // assignment
+      set operator||(const set &rhs); // union
+      set operator&&(const set &rhs); // intersection
 
-   class const_iterator;
-   const_iterator cbegin() const { return const_iterator (data); }
-   const_iterator cend() const;
-   const_reverse_iterator crbegin() const;
-   const_iterator find(const T & t) const;
+      // standard container interfaces
+      int size() const { return numElements; }
+      bool empty() const { return (size() == 0); }
+      void clear()
+      {
+         numElements = 0;
+         data = NULL;
+      }
+      void insert(const T t);
 
-};
+      // iterator interfaces
+      class iterator;
+      iterator begin() { return iterator(data); }
+      iterator end();
+      iterator find(T t);
+      iterator erase(iterator it);
+   };
 
 /**************************************************
  * SET ITERATOR
  * An iterator through set
  *************************************************/
-template <class T>
-class set <T> :: iterator
-{
-public:
-   // constructors, destructors, and assignment operator
-   iterator()      : p(NULL)      {              }
-   iterator(T * p) : p(p)         {              }
-   iterator(const iterator & rhs) { *this = rhs; }
-   iterator & operator = (const iterator & rhs)
+   template<class T>
+   class set<T>::iterator
    {
-      this->p = rhs.p;
-      return *this;
-   }
+   public:
+      // constructors, destructors, and assignment operator
+      iterator() : p(NULL){}
+      iterator(T *p) : p(p){}
+      iterator(const iterator &rhs) { *this = rhs; }
 
-   // equals, not equals operator
-   bool operator != (const iterator & rhs) const { return rhs.p != this->p; }
-   bool operator == (const iterator & rhs) const { return rhs.p == this->p; }
+      iterator &operator=(const iterator &rhs)
+      {
+         this->p = rhs.p;
+         return *this;
+      }
 
-   // dereference operator
-         T & operator * ()       { return *p; }
-   const T & operator * () const { return *p; }
+      // equals, not equals operator
+      bool operator!=(const iterator &rhs) const { return rhs.p != this->p; }
+      bool operator==(const iterator &rhs) const { return rhs.p == this->p; }
 
-   // prefix increment
-   iterator & operator ++ ()
-   {
-      p++;
-      return *this;
-   }
+      // dereference operator
+      T &operator*() { return *p; }
+      const T &operator*() const { return *p; }
 
-   // postfix increment
-   iterator operator ++ (int postfix)
-   {
-      iterator tmp(*this);
-      p++;
-      return tmp;
-   }
+      // prefix increment
+      iterator &operator++()
+      {
+         p++;
+         return *this;
+      }
 
-   // prefix decrement
-   iterator & operator -- ()
-   {
-      p--;
-      return *this;
-   }
+      // postfix increment
+      iterator operator++(int postfix)
+      {
+         iterator tmp(*this);
+         p++;
+         return tmp;
+      }
 
-   // postfix decrement
-   iterator & operator -- (int postfix)
-   {
-      iterator tmp(*this);
-      p--;
-      return tmp;
-   }
-   
-private:
-   T * p;
-};
-
-/**************************************************
- * SET CONST ITERATOR
- * A protected iterator through set
- *************************************************/
-template <class T>
-class set <T> :: const_iterator
-{
-public:
-   // constructors, destructors, assignment operator
-   const_iterator()      : p(NULL)            {              }
-   const_iterator(T * p) : p(p)               {              }
-   const_iterator(const const_iterator & rhs) { *this = rhs; }
-   const_iterator & operator= (const const_iterator & rhs)
-   {
-      this->p = rhs.p;
-      return *this;
-   }
-
-   // equals, not equals operators
-   bool operator != (const const_iterator & rhs) const { return rhs.p != this->p; }
-   bool operator == (const const_iterator & rhs) const { return rhs.p == this->p; }
-
-   // dereference operator
-   const T & operator * () const { return *p; }
-
-   // prefix increment
-   const_iterator & operator ++ ()
-   {
-      p++;
-      return *this;
-   }
-   
-   // postfix increment
-   const_iterator operator ++ (int postfix)
-   {
-      const_iterator tmp(*this);
-      p++;
-      return tmp;
-   }
-
-   // prefix decrement
-   const_iterator & operator -- ()
-   {
-      p--;
-      return *this;
-   }
-
-   // postfix decrement
-   const_iterator & operator -- (int postfix)
-   {
-      const_iterator tmp(*this);
-      p--;
-      return tmp;
-   }
-
-private:
-   T * p;
-};
+   private:
+      T *p;
+   };
 
 /********************************************
 * SET ITERATOR :: END
 * Note that you have to use "typename" before the return value type
 ********************************************/
-template <class T>
-typename set <T>::iterator set<T>::end()
-{
-   return iterator(data + numElements);
-}
+   template<class T>
+   typename set<T>::iterator set<T>::end()
+   {
+      return iterator(data + numElements);
+   }
 
 /********************************************
 * SET ITERATOR :: FIND
 * Note that you have to use "typename" before the return value type
 ********************************************/
-template <class T>
-typename set<T>::iterator set<T>::find(T t)
-{
-   for (iterator it = begin(); it != end(); it++)
+   template<class T>
+   typename set<T>::iterator set<T>::find(T t)
    {
-      if(*(it) == t)
-         return it;
-   }
+      for (iterator it = begin(); it != end(); it++)
+      {
+         if (*(it) == t)
+            return it;
+      }
 
-   return end();
-}
+      return end();
+   }
 
 /********************************************
 * SET ITERATOR :: ERASE
 * Note that you have to use "typename" before the return value type
 ********************************************/
-template <class T>
-typename set<T>::iterator set<T>::erase(set<T>::iterator it)
-{
-   int index = findIndex(*(it++));
-
-   int a = 0;
-   T* tempData = new T[numCapacity];
-
-   for (int i = 0; i < (numElements - 1) ; ++i)
+   template<class T>
+   typename set<T>::iterator set<T>::erase(iterator it)
    {
-      if(n == index)
-         ++a;
+      int index = findIndex(*(it++));
 
-      tempData[i] = data[a++];
+      int a = 0;
+      T *tempData = new T[numCapacity];
+
+      for (int i = 0; i < numElements - 1; i++)
+      {
+         if (a == index)
+         {
+            ++a;
+         }
+
+         tempData[i] = data[a++];
+      }
+
+      reallocateData(numCapacity);
+      for (int i = 0; i < numElements; i++)
+      {
+         data[i] = tempData[i];
+      }
+
+      delete[] tempData;
+      numElements--;
+
+      return it;
    }
 
-   try
+/**********************************************
+* SET : NON-DEFAULT CONSTRUCTOR
+* Preallocate the deque to "capacity"
+**********************************************/
+   template<class T>
+   set<T>::set(int numCapacity)
    {
-      this->data = new T[rhs.capacity()];
+      // allocate buffer for new array
+      reallocateData(numCapacity);
+      // assign default values for set
+      this->numCapacity = numCapacity;
+      numElements = 0;
    }
-   catch (std::bad_alloc)
+
+/*******************************************
+* SET :: COPY CONSTRUCTOR
+*******************************************/
+   template<class T>
+   set<T>::set(const set<T> &rhs)
    {
-      throw "ERROR: Unable to allocate a new buffer for set";
+      reallocateData(rhs.numCapacity);
+      numCapacity = rhs.numCapacity;
+      numElements = rhs.numElements;
+
+      // copy the items over one at a time using the assignment operator
+      for (int i = 0; i < numCapacity; i++)
+         data[i] = rhs.data[i];
    }
 
-   for (int j = 0; j < numElements; j++)
+/*******************************************
+* SET :: OVERLOADED = OPERATOR
+*******************************************/
+   template<class T>
+   set<T> &set<T>::operator=(const set<T> &rhs)
    {
-      data[j] = tempData[j];
+      try
+      {
+         if (numCapacity < rhs.numCapacity)
+         {
+            resize(rhs.numCapacity);
+         }
+
+         for (int i = 0; i < this->numElements; ++i)
+         {
+            this->data[i] = rhs.data[i];
+         }
+
+         numElements = rhs.numElements;
+
+         return *this;
+      }
+      catch (std::bad_alloc)
+      {
+         throw "ERROR: Unable to allocate a new buffer for set";
+      }
    }
 
-   delete[] tempData;
-   numElements--;
+/*******************************************
+* SET :: OVERLOADED && OPERATOR
+*******************************************/
+   template<class T>
+   set<T> set<T>::operator&&(const set &rhs)
+   {
+      set<T> tempSet(1);
 
-   return it;
+      for (int i = 0; i < rhs.numElements - 1; i++)
+      {
+         iterator it = find(rhs.data[i]);
 
+         if (it == end())
+         {
+            continue;
+         }
 
-}
+         tempSet.insert(rhs.data[i]);
+      }
+
+      return tempSet;
+   }
+
+/*******************************************
+* SET :: OVERLOADED || OPERATOR
+*******************************************/
+   template<class T>
+   set<T> set<T>::operator||(const set &rhs)
+   {
+      set<T> tempSet(1);
+
+      tempSet = *this;
+
+      for (int i = 0; i < rhs.numElements; i++)
+      {
+         tempSet.insert(rhs.data[i]);
+      }
+
+      return tempSet;
+   }
+
+/*******************************************
+* SET :: INSERT
+*******************************************/
+   template<class T>
+   void set<T>::insert(T t)
+   {
+      int index = findIndex(t);
+
+      if (index >= 0)
+      {
+         return;
+      }
+
+      //reverse compliment
+      index = -1 + -index;
+
+      if (numCapacity == numElements)
+      {
+         resize(numCapacity * 2);
+      }
+
+      int a = 0;
+      T *tempData = new T[numCapacity];
+
+      // copy the data
+      for (int i = 0; i < numElements; i++)
+         tempData[i] = data[i];
+
+      for (int i = 0; i < numElements + 1; i++)
+      {
+         if (index == i)
+         {
+            data[i] = t;
+         } else
+         {
+            data[i] = tempData[a++];
+         }
+      }
+
+      delete[] tempData;
+      numElements++;
+   }
+
+/*******************************************
+* SET :: FINDINDEX
+*******************************************/
+   template<class T>
+   const int set<T>::findIndex(const T t)
+   {
+      int iFirst = 0;
+      int iLast = numElements - 1;
+
+      while (iFirst <= iLast)
+      {
+         int iMiddle = (iFirst + iLast) / 2;
+
+         if (data[iMiddle] == t)
+            return iMiddle;
+         if (data[iMiddle] > t)
+            iLast = iMiddle - 1;
+         else
+            iFirst = iMiddle + 1;
+      }
+
+      return -1 - iFirst; // not found! Return two's compliment
+   }
+
+/*******************************************
+* SET :: REALLOCATEARRAY
+*  Used to reduce the number of times this is written
+*******************************************/
+   template<class T>
+   void set<T>::reallocateData(int numCapacity)
+   {
+      try
+      {
+         data = new T[numCapacity];
+      }
+      catch (std::bad_alloc)
+      {
+         throw "ERROR: Unable to allocate a new buffer for set";
+      }
+   }
 
 } //namespace custom
+#endif //CS235_SET_H
