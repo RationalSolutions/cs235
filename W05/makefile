@@ -1,13 +1,18 @@
 ###############################################################
 # Program:
 #     Assignment 05, SET
-#     Brother <instructor>, CS235
+#     Brother Kirby, CS235
 # Author:
-#     <your name here>
+#     Coby Jenkins
+#     Michael Gibson
 # Summary:
-#     <put a description here>
+#     Implement a custom version of the std::set data structure and implement
+#     the body of the goFish game.
 # Time:
-#     <how long did it take to complete this program>?
+#     Coby: I spent about 5 hours on the set.h file and about 2 hours on the
+#           goFish.cpp files. My struggle was getting the set.h file to
+#           compile because I was missing a method implementation. Thankfully
+#           Michael was able to identify my mistake and got it working.
 ###############################################################
 
 ##############################################################

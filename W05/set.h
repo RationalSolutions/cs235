@@ -56,18 +56,15 @@ namespace custom
       }
 
       // overload operators
-      set &operator=(const set &rhs);  // assignment
-      set operator||(const set &rhs); // union
-      set operator&&(const set &rhs); // intersection
+      set & operator = (const set &rhs); // assignment
+      set operator || (const set &rhs);  // union
+      set operator && (const set &rhs);  // intersection
+      set operator - (const set &rhs);   // difference
 
       // standard container interfaces
       int size() const { return numElements; }
       bool empty() const { return (size() == 0); }
-      void clear()
-      {
-         numElements = 0;
-         data = NULL;
-      }
+      void clear() { numElements = 0; }
       void insert(const T t);
 
       // iterator interfaces
@@ -76,6 +73,12 @@ namespace custom
       iterator end();
       iterator find(T t);
       iterator erase(iterator it);
+
+      // constant iterator interfaces
+      class const_iterator;
+      const_iterator cbegin() const { return const_iterator (data); }
+      const_iterator cend() const;
+      const_iterator cfind(const T & t) const;
    };
 
 /**************************************************
@@ -184,68 +187,184 @@ namespace custom
       return it;
    }
 
+/**************************************************
+ * SET CONST ITERATOR
+ * A protected iterator through set
+ *************************************************/
+template <class T>
+class set <T> :: const_iterator
+{
+public:
+   // constructors, destructors, assignment operator
+   const_iterator()      : p(NULL)            {              }
+   const_iterator(T * p) : p(p)               {              }
+   const_iterator(const const_iterator & rhs) { *this = rhs; }
+   const_iterator & operator= (const const_iterator & rhs)
+   {
+      this->p = rhs.p;
+      return *this;
+   }
+
+   // equals, not equals operators
+   bool operator != (const const_iterator & rhs) const { return rhs.p != this->p; }
+   bool operator == (const const_iterator & rhs) const { return rhs.p == this->p; }
+
+   // dereference operator
+   const T & operator * () const { return *p; }
+
+   // prefix increment
+   const_iterator & operator ++ ()
+   {
+      p++;
+      return *this;
+   }
+   
+   // postfix increment
+   const_iterator operator ++ (int postfix)
+   {
+      const_iterator tmp(*this);
+      p++;
+      return tmp;
+   }
+
+   // prefix decrement
+   const_iterator & operator -- ()
+   {
+      p--;
+      return *this;
+   }
+
+   // postfix decrement
+   const_iterator & operator -- (int postfix)
+   {
+      const_iterator tmp(*this);
+      p--;
+      return tmp;
+   }
+
+private:
+   T * p;
+};
+
+/********************************************
+* SET CONST_ITERATOR :: CEND
+* Note that you have to use "typename" before the return value type
+********************************************/
+   template<class T>
+   typename set<T> :: const_iterator set<T> :: cend() const
+   {
+      return const_iterator (data + numElements);
+   }
+
+/********************************************
+* SET CONST_ITERATOR :: CFIND
+* Note that you have to use "typename" before the return value type
+********************************************/
+   template<class T>
+   typename set<T> :: const_iterator set<T> :: cfind(const T & t) const
+   {
+      for (iterator it = begin(); it != end(); it++)
+      {
+         if (*(it) == t)
+            return it;
+      }
+
+      return end();
+   }
+
 /**********************************************
 * SET : NON-DEFAULT CONSTRUCTOR
-* Preallocate the deque to "capacity"
+* Preallocate the set to "capacity"
 **********************************************/
-   template<class T>
-   set<T>::set(int numCapacity)
-   {
-      // allocate buffer for new array
-      reallocateData(numCapacity);
-      // assign default values for set
-      this->numCapacity = numCapacity;
-      numElements = 0;
+template<class T>
+set<T>::set(int numCapacity)
+{
+   // set numElements and numCapacity
+   this->numCapacity = numCapacity;
+   this->numElements = 0;
+
+   // allocate buffer for new array
+   try{
+      this->data = new T[this->numCapacity];
    }
+   catch (std::bad_alloc){
+      throw "ERROR: Unable to allocate a new buffer for set";
+   }
+
+}
 
 /*******************************************
 * SET :: COPY CONSTRUCTOR
 *******************************************/
    template<class T>
-   set<T>::set(const set<T> &rhs)
+   set<T> :: set(const set<T> & rhs)
    {
-      reallocateData(rhs.numCapacity);
-      numCapacity = rhs.numCapacity;
-      numElements = rhs.numElements;
+      this->numElements = rhs.numElements;
+
+      // there is nothing to copy if the set
+      // does not contain any data
+      if(rhs.capacity() == 0){
+         this->numCapacity = 0;
+         this->data = NULL;
+         return;
+      }
+
+      // attempt to allocate
+      try{
+         this->data = new T[rhs.capacity()];
+      }
+      catch (std::bad_alloc){
+         throw "ERROR: Unable to allocate a new buffer for set";
+      }
 
       // copy the items over one at a time using the assignment operator
-      for (int i = 0; i < numCapacity; i++)
-         data[i] = rhs.data[i];
+      for (int i = 0; i < this->numElements; ++i) {
+         this->data[i] = rhs.data[i];
+      }
    }
 
 /*******************************************
 * SET :: OVERLOADED = OPERATOR
 *******************************************/
    template<class T>
-   set<T> &set<T>::operator=(const set<T> &rhs)
+   set<T> & set<T> :: operator = (const set <T> &rhs)
    {
-      try
+      this->numElements = 0;
+      if(rhs.capacity() == 0)
       {
-         if (numCapacity < rhs.numCapacity)
-         {
-            resize(rhs.numCapacity);
-         }
-
-         for (int i = 0; i < this->numElements; ++i)
-         {
-            this->data[i] = rhs.data[i];
-         }
-
-         numElements = rhs.numElements;
-
+         this->numCapacity = 0;
+         this->data = NULL;
          return *this;
       }
-      catch (std::bad_alloc)
-      {
+
+      try{
+         this->data = new T(rhs.capacity());
+      }
+      catch(std::bad_alloc){
          throw "ERROR: Unable to allocate a new buffer for set";
       }
+
+      if(this->capacity() < rhs.numElements)
+      {
+         resize(rhs.numElements);
+      }
+
+      this->numElements = rhs.numElements;
+
+      for (int i = 0; i < this->numElements; ++i) {
+         this->data[i] = rhs.data[i];
+      }
+
+      return *this;
    }
+
+   
 
 /*******************************************
 * SET :: OVERLOADED && OPERATOR
 *******************************************/
    template<class T>
-   set<T> set<T>::operator&&(const set &rhs)
+   set<T> set<T> :: operator && (const set <T> &rhs)
    {
       set<T> tempSet(1);
 
@@ -268,7 +387,7 @@ namespace custom
 * SET :: OVERLOADED || OPERATOR
 *******************************************/
    template<class T>
-   set<T> set<T>::operator||(const set &rhs)
+   set<T> set<T> :: operator || (const set <T> &rhs)
    {
       set<T> tempSet(1);
 
@@ -281,6 +400,43 @@ namespace custom
 
       return tempSet;
    }
+
+/*******************************************
+* SET :: OVERLOADED - (DIFFERENCE)OPERATOR
+*******************************************/
+   template<class T>
+   set<T> set<T> :: operator - (const set <T> & rhs)
+{
+    set <T> difference;
+    int leftHandIndex = 0;
+    int rightHandIndex = 0;
+
+    while (leftHandIndex < numElements)
+    {
+        if (rightHandIndex >= rhs.size())
+        {
+            difference.insert(data[leftHandIndex]);
+            leftHandIndex++;
+        }
+
+        if (data[leftHandIndex] == rhs.data[rightHandIndex])
+        {
+            rightHandIndex++;
+            leftHandIndex++;
+        }
+        else if (data[leftHandIndex] > rhs.data[rightHandIndex])
+        {
+            rightHandIndex++;
+        }
+        else
+        {
+            difference.insert(data[leftHandIndex]);
+            leftHandIndex++;
+        }
+    }
+
+    return difference;
+}
 
 /*******************************************
 * SET :: INSERT
@@ -349,12 +505,50 @@ namespace custom
       return -1 - iFirst; // not found! Return two's compliment
    }
 
+/***************************************************
+* SET :: resize
+* Increases the capacity of the set array
+**************************************************/
+template <class T>
+void set <T> :: resize(int newCapacity)
+{
+   if (newCapacity == 0)
+   {
+      numCapacity = ++newCapacity;
+      data = new T[numCapacity];
+      return;
+   }
+
+   // allocate memory for new array
+   T* newData;
+   try
+   {
+      newData = new T[newCapacity];
+   }
+   catch (std::bad_alloc)
+   {
+      throw "ERROR: Unable to allocate a new buffer for set";
+   }
+
+   // copy the data
+   for (int i = 0; i < newCapacity; ++i){
+      newData[i] = data[i];
+   }
+
+   // set capacity to new capacity
+   numCapacity = newCapacity;
+   
+   // delete information from old and move new data
+   delete []data;
+   data = newData;
+}
+
 /*******************************************
 * SET :: REALLOCATEARRAY
 *  Used to reduce the number of times this is written
 *******************************************/
    template<class T>
-   void set<T>::reallocateData(int numCapacity)
+   void set<T> :: reallocateData(int numCapacity)
    {
       try
       {
