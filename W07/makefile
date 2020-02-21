@@ -1,9 +1,10 @@
 ###############################################################
 # Program:
 #     Assignment 07, LIST
-#     Brother XXXXX, CS235
+#     Brother Kirby, CS235
 # Author:
-#     <your name here>
+#     Coby Jenkins
+#     Michael Gibson
 # Summary:
 #     <put a description here>
 ###############################################################
