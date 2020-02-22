@@ -6,7 +6,11 @@
 #     Coby Jenkins
 #     Michael Gibson
 # Summary:
-#     <put a description here>
+#     Coby:
+#         Working out the algorithim for the wholeNumber += overloaded
+#         operator was the most frustrating part. I knew what I wanted to do but
+#         it took too long to get it done. I spent 6hrs working on this
+#         assignment
 ###############################################################
 
 ##############################################################

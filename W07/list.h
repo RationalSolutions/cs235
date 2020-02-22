@@ -58,23 +58,23 @@ public:
    T & back();
    T & back() const;
 
-   //Iterator
+   //Iterators
    class iterator;
    iterator find(T element);
    void erase(iterator & it);
    iterator insert(iterator & it, const T & element);
    iterator begin() { return iterator(pHead); }
    iterator end() { return iterator(pTail); }
-   iterator rend();
-   iterator rbegin();
+   iterator rbegin() { return iterator(pTail);}
+   iterator rend() { return iterator(NULL); }
 
-   //Constant Iterator
+   //Constant Iterators
    class const_iterator;
    const_iterator cfind(const T & element) const;
    const_iterator cbegin() const { return const_iterator(pHead); }
    const_iterator cend() const { return const_iterator(pTail); }
-   const_iterator crbegin() const;
-   const_iterator crend() const;
+   const_iterator crbegin() const { return const_iterator(pTail);}
+   const_iterator crend() const { return const_iterator(NULL);}
 
 };
 
