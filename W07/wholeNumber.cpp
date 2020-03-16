@@ -14,7 +14,7 @@
  * operator =
  * Assignment operator
  ***********************************************************************/
-WholeNumber& WholeNumber & WholeNumber::operator=(const WholeNumber &rhs)
+WholeNumber & WholeNumber::operator=(const WholeNumber & rhs)
 {
    periods = rhs.periods;
    return *this;
@@ -24,10 +24,10 @@ WholeNumber& WholeNumber & WholeNumber::operator=(const WholeNumber &rhs)
  * operator +=
  * Add and assign the sum
  ***********************************************************************/
- WholeNumber& WholeNumber & WholeNumber::operator+=(WholeNumber &rhs)
+WholeNumber & WholeNumber::operator+=(WholeNumber & rhs)
 {
-    list<int>::iterator it = periods.rbegin(); //reverse iteration through current number list
-    list<int>::iterator itRhs = rhs.periods.rbegin(); //reverse iteration through numbers to add
+    list<int>::reverse_iterator it = periods.rbegin(); //reverse iteration through current number list
+    list<int>::reverse_iterator itRhs = rhs.periods.rbegin(); //reverse iteration through numbers to add
     list<int> completeNumber; //hold the sum of numbers
 
     int c = 0; //carry over for the summation
@@ -41,7 +41,7 @@ WholeNumber& WholeNumber & WholeNumber::operator=(const WholeNumber &rhs)
        if(it != periods.rend()) //sets left hand value for addition
        {
           l = *it;
-          it--;
+          it++;
        }else //if tis is the end set to 0
        {
           l = 0;
@@ -50,7 +50,7 @@ WholeNumber& WholeNumber & WholeNumber::operator=(const WholeNumber &rhs)
        if(itRhs != rhs.periods.rend()) //sets right hand value for addition
        {
           r = *itRhs;
-          itRhs--;
+          itRhs++;
        }else //if tis is the end set to 0
        {
           r = 0;
@@ -60,14 +60,14 @@ WholeNumber& WholeNumber & WholeNumber::operator=(const WholeNumber &rhs)
        t = v % 1000; //ensures that values are no more than 3 digits long
        c = v / 1000; //determines new carry value
 
-       sum.push_front(t); //builds the sum pushing values to the right
+       completeNumber.push_front(t); //builds the sum pushing values to the right
     }
 
     if(c > 0)
     {
-       sum.push_front(c);
+       completeNumber.push_front(c);
     }
 
-    periods = sum;
+    periods = completeNumber;
    return *this;
 }

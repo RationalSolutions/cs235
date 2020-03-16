@@ -7,10 +7,13 @@
 #     Michael Gibson
 # Summary:
 #     Coby:
-#         Working out the algorithim for the wholeNumber += overloaded
+#         Working out the algorithm for the wholeNumber += overloaded
 #         operator was the most frustrating part. I knew what I wanted to do but
-#         it took too long to get it done. I spent 6hrs working on this
-#         assignment
+#         it took too long to get it done. I then struggled with getting the
+#         pHead and pTail values to be accepted as member variables so I moved
+#         the private declarations to after the public ones and it worked. Also
+#         troubleshooting the need for friend functions in the iterators was
+#         tedious. I spent 10 hrs working on this assignment.
 ###############################################################
 
 ##############################################################

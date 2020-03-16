@@ -14,6 +14,8 @@
 #include <iomanip> //needed for commas and set spacing
 #include "list.h"
 
+using namespace custom;
+
 class WholeNumber
 {
 private:
