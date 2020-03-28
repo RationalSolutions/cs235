@@ -3,7 +3,7 @@
  *    Week 11, Sort Binary
  *    Brother Helfrich, CS 235
  * Author:
- *    <your name>
+ *    Michael Gibson
  * Summary:
  *    This program will implement the Binary Tree Sort
  ************************************************************************/
@@ -21,6 +21,21 @@
 template <class T>
 void sortBinary(T array[], int num)
 {
+    //useful variables
+    custom :: BST <T> bst;
+
+    // insert the array into a bst, which creates a sorted
+    // binary tree.
+    for(int i = 0; i < num; ++i){
+        bst.insert(array[i]);
+    }
+
+    // copy the bst back into the array as a sorted array.
+    int i = 0;
+    typename custom :: BST <T> :: iterator it = bst.begin();
+    for (; it != bst.end(); ++it){
+            array[i++] = *it;
+    }
 }
 
 
